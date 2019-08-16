@@ -2,20 +2,53 @@
  * Night shift manager; abstract a night shift
  */
 export default class CartManager {
+	
+	/**
+	 * Return a CartManager
+	 * * : Should use schemas
+	 *
+	 * @param bookById {Object} Books descriptors by id
+	 *
+	 *  Example : {
+	 *               book4: {
+	 *					id        : "book4",
+	 *					price     : 8,
+	 *					collection: "harry",
+	 *				},
+	 *			}
+	 * @param discountsByCollection {Object} Discounts basing the number of distinct book counts, by collection
+	 *  Example :
+	 *           {
+	 *				harry: [0, .05, .10, .20, .25]
+	 *			}
+	 */
 	constructor( bookById, discountsByCollection = {} ) {
 		this.data = { bookById, discountsByCollection, cart: [] };
+		
 	}
 	
-	
+	/**
+	 * Add 1 or multple book basing it's id
+	 * @param itemId {string} the book id
+	 * @param count {int} how much of this book to add ( default : 1 )
+	 */
 	addToCart( itemId, count = 1 ) {
 		while ( count-- )
 			this.data.cart.push(itemId);
 	}
 	
+	/**
+	 * Delete previously added books
+	 */
 	resetCart() {
 		this.data.cart = [];
 	}
 	
+	
+	/**
+	 * Calc the best total price basing the discounts
+	 * @returns {{total: *, best: (Array|*)}|{total: number}}
+	 */
 	getTotalPrice() {
 		let { bookById, discountsByCollection, cart } = this.data;
 		
