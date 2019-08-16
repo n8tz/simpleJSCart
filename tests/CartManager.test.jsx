@@ -29,7 +29,6 @@ describe(packageCfg.name + "@" + packageCfg.version + " : ", () => {
 			// Try to include the lib via node require
 			CartManager = require('..').default;
 			assert.ok(!!CartManager, "Can't require the js module")
-			assert.ok(!!CartManager, "Can't require the js module")
 		});
 		it('should instantiate CartManager fine', function () {
 			// Try to include the lib via node require
@@ -74,7 +73,7 @@ describe(packageCfg.name + "@" + packageCfg.version + " : ", () => {
 			// Simply create & sum simple cart list
 			myCart.addToCart("book1");
 			myCart.addToCart("book2");
-			assert.ok(myCart.getTotalPrice().total === ((10 + 10) - .05 * 20), "CartManager fail on simple cart sum")
+			assert.ok(myCart.getTotalPrice().total === ((10 + 10) - .05 * 20), "CartManager fail on simple cart sum with discount")
 		});
 		it('should sum cart maximizing the discounts', function () {
 			/**
@@ -126,7 +125,7 @@ describe(packageCfg.name + "@" + packageCfg.version + " : ", () => {
 			myCart.addToCart("book3", 2);
 			myCart.addToCart("book4");
 			myCart.addToCart("book5");
-			assert.ok(myCart.getTotalPrice().total === 51.20, "CartManager fail on complex cart sum")
+			assert.ok(myCart.getTotalPrice().total === 51.20, "CartManager fail on complex cart sum with discount")
 		});
 	});
 	
