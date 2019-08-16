@@ -16,6 +16,7 @@ export default class CartManager {
 	 *					collection: "harry",
 	 *				},
 	 *			}
+	 *
 	 * @param discountsByCollection {Object} Discounts basing the number of distinct book counts, by collection
 	 *  Example :
 	 *           {
@@ -47,7 +48,7 @@ export default class CartManager {
 	
 	/**
 	 * Calc the best total price basing the discounts
-	 * @returns {{total: *, best: (Array|*)}|{total: number}}
+	 * @returns {{total: number, best: (Array|*)}|{total: number}}
 	 */
 	getTotalPrice() {
 		let { bookById, discountsByCollection, cart } = this.data;
