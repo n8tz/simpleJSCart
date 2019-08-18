@@ -1,3 +1,6 @@
+import fastSort from "fast-sort";
+
+
 /**
  * Night shift manager; abstract a night shift
  */
@@ -64,10 +67,12 @@ export default class CartManager {
 		let i, y,
 		    possibleCarts     = [[]],
 		    nextPossibleCarts = [],
+		    alreadySeenNode   = {},
 		    cCart,
 		    nCart,
 		    cBook,
-		    baseCart          = [...cart];
+		    baseCart          = [...cart],
+		    nodeKey;
 		
 		if ( baseCart.length === 0 )
 			return { total: 0 };
@@ -79,11 +84,18 @@ export default class CartManager {
 			if ( !bookById[cBook] )
 				throw new Error("The cart contain an unknown book : " + cBook);
 			
-			cBook = bookById[cBook];
 			
 			// enumerate possibilities
 			while ( possibleCarts.length ) {
 				cCart = possibleCarts.pop();
+				
+				// Here a simple minimal optim  ( dedupe / avoid explorating equivalent carts multiple times )
+				cCart   = fastSort(cCart).desc(item => (Array.isArray(item) ? "_" + item.length : item));
+				nodeKey = cCart.map(( item ) => (Array.isArray(item) ? "[" + item + "]" : item)).join('+');
+				if ( alreadySeenNode[nodeKey] ) {
+					continue;
+				}
+				alreadySeenNode[nodeKey] = true;
 				
 				// first enumerate add it alone case
 				nextPossibleCarts.push([...cCart, cBook]);
@@ -92,25 +104,25 @@ export default class CartManager {
 				for ( i = 0; i < cCart.length; i++ ) {
 					
 					if (// array are collections, if this is the same collection & there discount
-						cBook.collection
+						bookById[cBook].collection
 						&& Array.isArray(cCart[i])
-						&& discountsByCollection[cBook.collection]
-						&& cBook.collection === cCart[i][0].collection
+						&& discountsByCollection[bookById[cBook].collection]
+						&& bookById[cBook].collection === bookById[cCart[i][0]].collection
 					) {
 						// if the collection doesn't contain this book enumerate..
 						if ( !cCart[i].includes(cBook) ) {
 							nCart    = [...cCart];
-							nCart[i] = [...nCart[i], cBook];
+							nCart[i] = fastSort([...nCart[i], cBook]).asc();
 							nextPossibleCarts.push(nCart);
 						}
 					}
 					else if ( // same collection !== book : enumerate new collection
-						cBook.collection
-						&& cBook.collection === cCart[i].collection
-						&& cBook.id !== cCart[i].id
+						bookById[cBook].collection
+						&& bookById[cBook].collection === bookById[cCart[i]].collection
+						&& cBook !== cCart[i]
 					) {
 						nCart    = [...cCart];
-						nCart[i] = [nCart[i], cBook];
+						nCart[i] = fastSort([nCart[i], cBook]).asc();
 						nextPossibleCarts.push(nCart);
 					}
 				}
@@ -133,17 +145,17 @@ export default class CartManager {
 			for ( y = 0; y < cCart.length; y++ ) {
 				if ( Array.isArray(cCart[y]) ) {// add discount on collections
 					// get the applicable discount
-					discount = discountsByCollection[cCart[y][0].collection][cCart[y].length - 1];
+					discount = discountsByCollection[bookById[cCart[y][0]].collection][cCart[y].length - 1];
 					
 					// sum da collection
-					tmpTotal = cCart[y].reduce(( total, book ) => (total + book.price), 0);
+					tmpTotal = cCart[y].reduce(( total, bookId ) => (total + bookById[bookId].price), 0);
 					
 					// apply the discount
 					tmpTotal = tmpTotal - tmpTotal * discount;
 					priceStack[i] += tmpTotal;
 				}
 				else {
-					priceStack[i] += cCart[y].price;
+					priceStack[i] += bookById[cCart[y]].price;
 				}
 			}
 			if ( minPrice > priceStack[i] ) {
