@@ -56,13 +56,14 @@ export default class CartManager {
 	getTotalPrice() {
 		let { bookById, discountsByCollection, cart } = this.data;
 		
-		// That's a Knapsack problem variation which is NP complete
-		// Simplest approach is to enumerate..
+		// I think it's Knapsack problem variation which is NP complete
+		// Simplest approach is to enumerate & dedupe..
 		// Best approach is to deal with existing implementations like
 		// https://github.com/trekhleb/javascript-algorithms/tree/master/src/algorithms/sets/knapsack-problem
 		
 		// There multiple approach to optimize,
 		// This code keep a naive / simple to understand approach
+		//
 		
 		let i, y,
 		    possibleCarts     = [[]],
@@ -89,12 +90,14 @@ export default class CartManager {
 			while ( possibleCarts.length ) {
 				cCart = possibleCarts.pop();
 				
-				// Here a simple minimal optim  ( dedupe / avoid explorating equivalent carts multiple times )
+				// Simple minimal optim : dedupe / avoid explorating equivalent carts multiple times
+				// Make a stable key which will be the same for equivalents carts
 				cCart   = fastSort(cCart).desc(item => (Array.isArray(item) ? "_" + item.length : item));
 				nodeKey = cCart.map(( item ) => (Array.isArray(item) ? "[" + item + "]" : item)).join('+');
-				if ( alreadySeenNode[nodeKey] ) {
+				
+				// ignore the cart an equivalent was processed
+				if ( alreadySeenNode[nodeKey] )
 					continue;
-				}
 				alreadySeenNode[nodeKey] = true;
 				
 				// first enumerate add it alone case
